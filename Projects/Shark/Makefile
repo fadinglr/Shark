@@ -1,6 +1,6 @@
 #
 #
-# Copyright (c) 2015 - 2019 by blindtiger. All rights reserved.
+# Copyright (c) 2015 - 2021 by blindtiger. All rights reserved.
 #
 # The contents of this file are subject to the Mozilla Public License Version
 # 2.0 (the "License"); you may not use this file except in compliance with
@@ -56,7 +56,7 @@ CCARCHOBJS = \
 CCOBJS = \
     $(OBJD)\$(PROJ).obj \
     $(OBJD)\Ctx.obj \
-    $(OBJD)\Detours.obj \
+    $(OBJD)\Guard.obj \
     $(OBJD)\Except.obj \
     $(OBJD)\PatchGuard.obj \
     $(OBJD)\Reload.obj \
@@ -78,7 +78,7 @@ PROJSRCS = \
     $(PROJ).c \
     Ctx.c \
     Cmp$(ARCTARG).asm \
-    Detours.c \
+    Guard.c \
     Except.c \
     PatchGuard.c \
     Reload.c \
@@ -152,8 +152,8 @@ BUILDLIBS = hal.lib ntoskrnl.lib bufferoverflowk.lib \
 !endif
     detours.lib
 
-LINKFLAGS = $(LINKIGNORE) /WX /NODEFAULTLIB /machine:$(ARCH) /debug /debugtype:cv,fixup
 LINK = link.exe /nologo
+LINKFLAGS = $(LINKIGNORE) /WX /NODEFAULTLIB /machine:$(ARCH) /debug /debugtype:cv,fixup
 
 LINKPROJNAMES = /out:$(PROJTARG).sys /map:$(PROJTARG).map /pdb:$(PROJTARG).pdb
 

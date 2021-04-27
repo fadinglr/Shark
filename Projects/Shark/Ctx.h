@@ -1,6 +1,6 @@
 /*
 *
-* Copyright (c) 2015 - 2019 by blindtiger. All rights reserved.
+* Copyright (c) 2015 - 2021 by blindtiger. All rights reserved.
 *
 * The contents of this file are subject to the Mozilla Public License Version
 * 2.0 (the "License"); you may not use this file except in compliance with
@@ -107,17 +107,6 @@ extern "C" {
 #endif // _WIN64
 
 #define GetBaseTrapFrame(Thread) GetBaseTrapFrameThread(Thread)
-
-    DECLSPEC_NORETURN
-        VOID
-        NTAPI
-        _CaptureContext(
-            __in ULONG ProgramCounter,
-            __in PVOID Detour,
-            __in PVOID Guard,
-            __in_opt PVOID Parameter,
-            __in_opt PVOID Reserved
-        );
 
     PKTRAP_FRAME
         NTAPI

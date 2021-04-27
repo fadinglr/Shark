@@ -1,6 +1,6 @@
 /*
 *
-* Copyright (c) 2015 - 2019 by blindtiger. All rights reserved.
+* Copyright (c) 2015 - 2021 by blindtiger. All rights reserved.
 *
 * The contents of this file are subject to the Mozilla Public License Version
 * 2.0 (the "License")); you may not use this file except in compliance with
@@ -21,10 +21,14 @@
 
 #include "Shark.h"
 
-#include "Detours.h"
+#include "Guard.h"
 #include "Reload.h"
 #include "PatchGuard.h"
 #include "Space.h"
+
+// #ifdef ALLOC_PRAGMA
+// #pragma alloc_text(PAGE, DriverEntry)
+// #endif
 
 VOID
 NTAPI
@@ -78,6 +82,8 @@ DriverEntry(
     PDEVICE_OBJECT DeviceObject = NULL;
     UNICODE_STRING DeviceName = { 0 };
     UNICODE_STRING SymbolicLinkName = { 0 };
+    PMMPTE PointerPte = NULL;
+    PFN_NUMBER NumberOfPages = 0;
 
     RtlInitUnicodeString(&DeviceName, DEVICE_STRING);
 
@@ -107,6 +113,20 @@ DriverEntry(
 #ifndef PUBLIC
             DbgPrint("[Shark] load\n");
 #endif // !PUBLIC
+
+            GpBlock = __malloc(sizeof(GPBLOCK) + sizeof(PGBLOCK));
+
+            if (NULL != GpBlock) {
+                RtlZeroMemory(
+                    GpBlock,
+                    sizeof(GPBLOCK) + sizeof(PGBLOCK));
+
+                GpBlock->PgBlock = __utop(GpBlock + 1);
+                GpBlock->PgBlock->GpBlock = __utop(GpBlock);
+
+                InitializeGpBlock(GpBlock);
+                InitializeSpace(GpBlock);
+            }
         }
         else {
             IoDeleteDevice(DeviceObject);
@@ -223,24 +243,7 @@ DeviceControl(
 
     switch (IrpSp->Parameters.DeviceIoControl.IoControlCode) {
     case 0: {
-        PPGBLOCK PgBlock = NULL;
-
-        GpBlock = ExAllocatePool(
-            NonPagedPool,
-            sizeof(GPBLOCK) + sizeof(PGBLOCK));
-
-        if (NULL != GpBlock) {
-            RtlZeroMemory(
-                GpBlock,
-                sizeof(GPBLOCK) + sizeof(PGBLOCK));
-
-            InitializeGpBlock(GpBlock);
-            InitializeSystemSpace(GpBlock);
-
-            PgBlock =(PCHAR)GpBlock + sizeof(GPBLOCK);
-
-            PgClear(PgBlock);
-        }
+        PgClear(GpBlock->PgBlock);
 
         Irp->IoStatus.Information = 0;
 
